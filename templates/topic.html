@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ topic }}</title>
+        <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <script src="http://code.jquery.com/jquery.js"></script>
+        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="navbar-inner">
+                <a class="brand" href="#">NSQ Monitor</a>
+                <ul class="nav">
+                    <li class="active"><a href="#">{{ topic }}</a></li>
+                    {% for t in topics %}
+                        <li><a href="/topic/{{ t }}">{{ t }}</a></li>
+                    {% end %}
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>
