@@ -1,5 +1,9 @@
-def get_topics():
-    return ["bob", "alice", "drew"]
+import requests
+
+def get_topics(lookupd="http://127.0.0.1:4161"):
+    url = lookupd+"/topics"
+    r = requests.get(url)
+    print r.json()
 
 def flatten_keys(d,parent=None):
     assert isinstance(d,dict), (d,parent)
