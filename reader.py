@@ -1,4 +1,5 @@
 import nsq
+import logging
 import argparse
 import json
 import redis
@@ -30,7 +31,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-r = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
+rdb = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
 
 def monitor(message):
     try:
@@ -38,8 +39,12 @@ def monitor(message):
     except ValueError:
         print "FAIL"
         raise
+    assert isinstance(blob,dict), blob
     for key in utils.flatten_keys(blob):
-        r.zincrby(args.topic, 1, key)
+        logging.info(key)
+        print key
+        rdb.zincrby(args.topic, key)
+    return True
 
 tasks = {"monitor": monitor}
 
