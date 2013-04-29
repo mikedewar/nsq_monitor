@@ -1,9 +1,17 @@
 import requests
+import redis
+
+r = redis.StrictRedis(db=0)
 
 def get_topics(lookupd="http://127.0.0.1:4161"):
     url = lookupd+"/topics"
     r = requests.get(url)
-    print r.json()
+    topics =  r.json()['data']['topics']
+    topics.sort()
+    return topics
+
+def get_data_dict(topic):
+    return r.zrevrange(topic, 0, -1, withscores=True)
 
 def flatten_keys(d,parent=None):
     assert isinstance(d,dict), (d,parent)

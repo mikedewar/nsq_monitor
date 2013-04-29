@@ -7,13 +7,20 @@ import utils
 class TopicHandler(tornado.web.RequestHandler):
     def get(self, topic): 
         logging.info(topic)
+        print "topic", topic
+        print "not topict", not topic
         topics = utils.get_topics()
-        topics.pop(topics.index(topic))
+        if topic:
+            topics.pop(topics.index(topic))
+        data = utils.get_data_dict(topic)
         params = {
             "topic": topic,
-            "topics": topics
+            "topics": topics,
+            "data": data,
         }
         self.render('topic.html',**params)
+
+        
 
 settings = {
     "debug": True,
