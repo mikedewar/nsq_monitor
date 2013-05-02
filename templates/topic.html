@@ -31,7 +31,7 @@
                         {% for d in data %}
                         <tr>
                             <td>{{ d[0] }}</td>
-                            <td>{{ d[1] }}</td>
+                            <td>{{ round(100 * d[1]/max([d[1] for d in data]),1) }}%</td>
                         <tr>
                         {% end %}
                     </tbody>
