@@ -1,4 +1,5 @@
 import tornado.web
+import os
 import tornado.options
 import logging
 import os
@@ -25,8 +26,8 @@ class TopicHandler(tornado.web.RequestHandler):
 
 settings = {
     "debug": True,
-    "template_path": os.path.join(os.path.dirname(__file__), "templates"),
-    "static_path": os.path.join(os.path.dirname(__file__),"static"),
+    "template_path": os.path.join(os.path.dirname(__file__),"templates/"),
+    "static_path": os.path.join(os.path.dirname(__file__),"static/"),
 }
 
 application = tornado.web.Application(
