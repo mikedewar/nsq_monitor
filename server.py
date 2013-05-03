@@ -12,8 +12,6 @@ class TopicHandler(tornado.web.RequestHandler):
         print "topic", topic
         print "not topict", not topic
         topics = utils.get_topics()
-        if topic:
-            topics.pop(topics.index(topic))
         data = utils.get_data_dict(topic)
         params = {
             "topic": topic,

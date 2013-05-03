@@ -7,35 +7,39 @@
         <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     </head>
     <body>
-        <div class="navbar">
-            <div class="navbar-inner">
-                <a class="brand" href="#">NSQ Monitor</a>
-                <ul class="nav">
-                    <li class="active"><a href="#">{{ topic }}</a></li>
-                    {% for t in topics %}
-                        <li><a href="/topic/{{ t }}">{{ t }}</a></li>
-                    {% end %}
-                </ul>
-            </div>
-        </div>
 
-        <div class="container">
-                <table class="table table-condensed table-bordered">
-                    <thead>
-                        <tr>
-                            <th>key</th>
-                            <th>count</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for d in data %}
-                        <tr>
-                            <td>{{ d[0] }}</td>
-                            <td>{{ round(100 * d[1]/max([d[1] for d in data]),1) }}%</td>
-                        <tr>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span2">
+                    <h1>NSQ Monitor</h1>
+                    <ul>
+                        {% for t in topics %}
+                            <li><a href="/topic/{{ t }}">{{ t }}</a></li>
                         {% end %}
-                    </tbody>
-                </table>
+                    </ul>
+                </div>
+                <div class="span10">
+                    <div class="page-header">
+                        <h3>{{ topic }}</h3>
+                    </div>
+                    <table class="table table-condensed table-bordered">
+                        <thead>
+                            <tr>
+                                <th>key</th>
+                                <th>count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in data %}
+                            <tr>
+                                <td>{{ d[0] }}</td>
+                                <td>{{ round(100 * d[1]/max([d[1] for d in data]),1) }}%</td>
+                            <tr>
+                            {% end %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         <div>
 
 
