@@ -1,5 +1,4 @@
 import nsq
-import logging
 import argparse
 import json
 import redis
@@ -51,16 +50,12 @@ def monitor(message):
     if counter > args.percent:
         return True
     
+    msg = message.body.strip().strip('"').decode('string-escape')
     try:
-        msg = message.body.strip().strip('"').decode('string-escape')
         msg = json.loads(msg)
     except ValueError:
         print "FAIL"
-        print message.body.strip().strip('"').decode('string-escape')
         raise
-
-
-    return True
 
     for key in utils.flatten_keys(msg):
         rdb.zincrby(args.topic, key)
