@@ -43,21 +43,27 @@ rdb = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
 counter = 0
 
 def monitor(message):
+    global counter
+
+    counter += 1
+    if counter > 100:
+        counter = 0
+    if counter > args.percent:
+        return True
+    
     try:
-        blob = json.loads(message.body)
+        msg = message.body.strip().strip('"').decode('string-escape')
+        msg = json.loads(msg)
     except ValueError:
         print "FAIL"
+        print message.body.strip().strip('"').decode('string-escape')
         raise
 
-    if isinstance(blob, dict):
-        blob = [json.dumps(blob)]
-    
-    for msg in blob[:int(args.percent)]:
-        msg = json.loads(msg)
-        for key in utils.flatten_keys(msg):
-            rdb.zincrby(args.topic, key)
 
     return True
+
+    for key in utils.flatten_keys(msg):
+        rdb.zincrby(args.topic, key)
 
 tasks = {"monitor": monitor}
 
