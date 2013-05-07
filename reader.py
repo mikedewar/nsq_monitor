@@ -18,6 +18,13 @@ parser.add_argument(
     help="host of redis server",
     default="localhost"
 )
+
+parser.add_argument(
+    '-q', '--percent',
+    help="percentage of messages to consume (only makes sense if used with /mput)",
+    default="100"
+)
+
 parser.add_argument(
     '-t', '--topic',
     required=True,
@@ -33,17 +40,23 @@ args = parser.parse_args()
 
 rdb = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
 
+counter = 0
+
 def monitor(message):
     try:
         blob = json.loads(message.body)
     except ValueError:
         print "FAIL"
         raise
-    assert isinstance(blob,dict), blob
-    for key in utils.flatten_keys(blob):
-        logging.info(key)
-        print key
-        rdb.zincrby(args.topic, key)
+
+    if isinstance(blob, dict):
+        blob = [json.dumps(blob)]
+    
+    for msg in blob[:int(args.percent)]:
+        msg = json.loads(msg)
+        for key in utils.flatten_keys(msg):
+            rdb.zincrby(args.topic, key)
+
     return True
 
 tasks = {"monitor": monitor}
@@ -52,6 +65,7 @@ r = nsq.Reader(
     tasks,
     lookupd_http_addresses=[args.lookupd],
     topic=args.topic,
-    channel="%s_monitor"%args.topic
+    channel="%s_monitor"%args.topic,
+    max_in_flight = 100,
 )
 nsq.run()
