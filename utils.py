@@ -38,16 +38,16 @@ def flatten(d,parent=None):
     for key,value in d.items():
         new_parent = '.'.join([parent,key]) if parent else key
         if isinstance(value,dict):
-            for k,v in flatten_keys(value, new_parent):
+            for k,v in flatten(value, new_parent):
                 out.add((k,v))
         if isinstance(value,list):
             new_parent += ".[]"
             for di in value:
                 if isinstance(di, dict):
-                    for k,v in flatten_keys(di, new_parent):
-                        out.add(k,v)
+                    for k,v in flatten(di, new_parent):
+                        out.add((k,v))
         else:
-            out.add(new_parent,value)
+            out.add((new_parent,value))
     return out
 
 def is_numeric(l):
