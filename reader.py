@@ -38,6 +38,10 @@ parser.add_argument(
 args = parser.parse_args()
 
 rdb = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
+setsdb = redis.StrictRedis(host=args.redishost, port=args.port, db=1)
+ratesdb = redis.StrictRedis(host=args.redishost, port=args.port, db=2)
+typesdb = redis.StrictRedis(host=args.redishost, port=args.port, db=3)
+carddb = redis.StrictRedis(host=args.redishost, port=args.port, db=4)
 
 counter = 0
 
@@ -57,8 +61,11 @@ def monitor(message):
         print "FAIL"
         raise
 
-    for key in utils.flatten_keys(msg):
+    for key,value in utils.flatten(msg):
         rdb.zincrby(args.topic, key)
+        if not typesdb.exists(key):
+            setsdb.sadd(key,value) 
+        utils.call_it(key, setsdb, carddb, ratedb, typesdb)
 
 tasks = {"monitor": monitor}
 
