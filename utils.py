@@ -3,6 +3,7 @@ import time
 import redis
 
 r = redis.StrictRedis(db=0)
+carddb = redis.StrictRedis(db=4)
 
 def get_topics(lookupd="http://127.0.0.1:4161"):
     url = lookupd+"/topics"
@@ -12,7 +13,20 @@ def get_topics(lookupd="http://127.0.0.1:4161"):
     return topics
 
 def get_data_dict(topic):
-    return r.zrevrange(topic, 0, -1, withscores=True)
+    data = r.zrevrange(topic, 0, -1, withscores=True)
+    keys, counts = zip(*data)
+    print counts
+    percents = [round(100 * c / float(max(counts)),2) for c in counts]
+    boundeds = [carddb.hget(topic+key, 'bounded') for key in keys]
+    types =  [carddb.hget(topic+key, 'type') for key in keys]
+    return zip(keys, percents, boundeds, types)
+
+
+def get_boundedness(topic):
+    return [
+        (key, carddb.hget(topic+key, 'bounded')) 
+        for key in r.zrevrange(topic, 0, -1)
+    ]
 
 def flatten_keys(d,parent=None):
     assert isinstance(d,dict), (d,parent)
@@ -40,7 +54,7 @@ def flatten(d,parent=None):
         if isinstance(value,dict):
             for k,v in flatten(value, new_parent):
                 out.add((k,v))
-        if isinstance(value,list):
+        elif isinstance(value,list):
             new_parent += ".[]"
             for di in value:
                 if isinstance(di, dict):
@@ -93,23 +107,47 @@ def what_type(l):
         return 'float'
     return 'str'
 
-def call_it(key,setsdb, carddb, ratedb, typesdb):
-    ct = setsdb.scard(key)
-    oldt = carddb.hget(key,'oldt')
-    oldct = carddb.hget(key,'oldct')
+def is_bounded(l, threshold=0.1):
+    if sum(l) / float(len(l)) < threshold:
+        return True
+    return False
+
+def call_it(key, topic, value, setsdb, carddb, ratedb, typesdb):
+
+    r.zincrby(topic, key)
+    setsdb.sadd(topic+key,value)
+
+    ct = setsdb.scard(topic+key)
+    # default is a one second bin.. 
+    oldt = carddb.hget(topic+key,'t') or time.time() - 1
+    oldct = carddb.hget(topic+key,'ct') or 0
+    
+    # let's just sort out types for a moment 
+    oldt = float(oldt)
+    oldct = int(oldct)
+    ct = int(ct)
     t = time.time()
-    rate = (ct - oldct) / float((t - oldt))
-    ratedb.lpush(key,rate)
-    if ratedb.llen(key) > 100:
-        # look at the last 10
-        rates = ratedb.lrange(key, 0, 10)
-        # if the average rate of increase is less than one
-        # then we assume that this set is converging in cardinality
-        v = setsdb.smembers(key)
-        if sum(rates)/len(rates) < 1:
-            typesdb.set(key, 'bounded'+what_type(v))
-        else:
-            typesdb.set(key, 'unbounded'+what_type(v))
+
+    # store state
+    carddb.hset(topic+key, 't', t)
+    carddb.hset(topic+key, 'ct', ct)
+
+    # calcualte rate
+    rate = ct / float(r.zscore(topic, key))
+    #print key, rate, ct, oldct
+    carddb.hset(topic+key, 'rate_t', rate)
+    ratedb.lpush(topic+key, rate)
+
+    # calculate boundedness
+    carddb.hset(
+        topic+key, 
+        'bounded', 
+        is_bounded(map(float, ratedb.lrange(topic+key, 0, int(ct*.1))))
+    )
+
+    # infer type
+    ty = what_type(setsdb.smembers(topic+key))
+    carddb.hset(topic+key, 'type', ty)
 
 if __name__ == "__main__":
     a = {"a":[{"b":3},{"b":4}], "c":3}

@@ -9,10 +9,9 @@ import utils
 class TopicHandler(tornado.web.RequestHandler):
     def get(self, topic): 
         logging.info(topic)
-        print "topic", topic
-        print "not topict", not topic
         topics = utils.get_topics()
         data = utils.get_data_dict(topic)
+        print data
         params = {
             "topic": topic,
             "topics": topics,

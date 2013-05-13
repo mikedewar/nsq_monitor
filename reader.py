@@ -39,7 +39,7 @@ args = parser.parse_args()
 
 rdb = redis.StrictRedis(host=args.redishost, port=args.port, db=0)
 setsdb = redis.StrictRedis(host=args.redishost, port=args.port, db=1)
-ratesdb = redis.StrictRedis(host=args.redishost, port=args.port, db=2)
+ratedb = redis.StrictRedis(host=args.redishost, port=args.port, db=2)
 typesdb = redis.StrictRedis(host=args.redishost, port=args.port, db=3)
 carddb = redis.StrictRedis(host=args.redishost, port=args.port, db=4)
 
@@ -47,25 +47,26 @@ counter = 0
 
 def monitor(message):
     global counter
+    print counter
 
     counter += 1
     if counter > 100:
         counter = 0
-    if counter > args.percent:
+    if counter > int(args.percent):
+        print "passing"
         return True
     
-    msg = message.body.strip().strip('"').decode('string-escape')
+    msg = message.body
     try:
         msg = json.loads(msg)
     except ValueError:
+        print msg
         print "FAIL"
         raise
 
     for key,value in utils.flatten(msg):
-        rdb.zincrby(args.topic, key)
-        if not typesdb.exists(key):
-            setsdb.sadd(key,value) 
-        utils.call_it(key, setsdb, carddb, ratedb, typesdb)
+        utils.call_it(key, args.topic, value, setsdb, carddb, ratedb, typesdb)
+    return True
 
 tasks = {"monitor": monitor}
 
