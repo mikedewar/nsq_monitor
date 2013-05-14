@@ -44,17 +44,17 @@ typesdb = redis.StrictRedis(host=args.redishost, port=args.port, db=3)
 carddb = redis.StrictRedis(host=args.redishost, port=args.port, db=4)
 
 counter = 0
+percent = float(args.percent)
 
 def monitor(message):
     global counter
-    print counter
 
-    counter += 1
+    counter += 0.01
     if counter > 100:
         counter = 0
-    if counter > int(args.percent):
-        print "passing"
+    if counter > percent:
         return True
+    print "processing"
     
     msg = message.body
     try:
@@ -75,6 +75,6 @@ r = nsq.Reader(
     lookupd_http_addresses=[args.lookupd],
     topic=args.topic,
     channel="%s_monitor"%args.topic,
-    max_in_flight = 100,
+    max_in_flight = 2000,
 )
 nsq.run()

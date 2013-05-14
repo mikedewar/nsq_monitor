@@ -114,6 +114,10 @@ def is_bounded(l, threshold=0.1):
 
 def call_it(key, topic, value, setsdb, carddb, ratedb, typesdb):
 
+    # we need a better way of deciding if we're done with this topic+key
+    if ratedb.llen(topic+key) > 10000:
+        return None
+
     r.zincrby(topic, key)
     setsdb.sadd(topic+key,value)
 
