@@ -19,6 +19,10 @@ class TopicHandler(tornado.web.RequestHandler):
         }
         self.render('topic.html',**params)
 
+class IndexHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('index.html')
+
         
 
 settings = {
@@ -29,6 +33,7 @@ settings = {
 
 application = tornado.web.Application(
     [
+        (r"/", IndexHandler),
         (r"/topic/(.*)", TopicHandler),
     ],
     **settings
