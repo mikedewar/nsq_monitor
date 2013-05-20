@@ -1,14 +1,20 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
         <script src="http://code.jquery.com/jquery.js"></script>
         <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     </head>
 
 <body>
-    <h1>Bigwheel</h1>
+        <div class="hero-unit">
+            <h1>bigwheel</h1>
+<p>Bigwheel is a system for provisioning New York Times data for research and early-stage prototyping.</p>
+        </div>
 
-    <h2>Bighweel Monitor</h2>
+    <div class="container">
+    <h2>bigwheel monitor</h2>
 
     <p><a href="/topic/event_tracker_pages">Bigwheel Monitor</a></p>
 
@@ -24,14 +30,18 @@ Hello
 
     <h2>Initial Setup</h2>
 
-    <ul>
-        <li>stand up an EC2 box in the bigwheel_consumer security group (ask Mike Dewar for the pre)</li>
-        <li>make sure you can call <pre>bigwheel.nytlabs.com:4161/ping</pre> and <pre>queue01.bigwheel.nytlabs.com:4151/ping</pre></li>
-    </ul>
-
+    <ol>
+        <li>stand up an EC2 box in the bigwheel_consumer security group (ask Mike Dewar for the security group code).</li>
+        <li>make sure you can curl <code>bigwheel.nytlabs.com:4161/ping</code> and <code>queue01.bigwheel.nytlabs.com:4151/ping</code> from your box.</li>
+        <li>Write a reader in your language of choice.</li>
+        <li>Stand up your reader as a daemon (we reccomend <a href="http://supervisord.org/">supervisord</a>.</li>
+    </ol>
     <div class="alert">
-        <strong>Warning!</strong> Always name your channels <pre>something#ephemeral</pre>
+        <strong>Important!</strong> Always name your channels <code>yourchannelnamehere#ephemeral</code> so that your channels will disappear when you're done.
     </div>
-
+<hr>
+Please get in touch with michael.dewar@nytimes.com with any questions.
+<hr>
+</div>
 </body>
 </html>
